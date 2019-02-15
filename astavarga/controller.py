@@ -101,7 +101,7 @@ def calculate_binastavarga(planet, rasi_chart):
     astavarga_table = load_planets_point()
     astavarga_chart_for_planet = new_chart()
     for sub_planet in astavarga_table[planet]:
-      sub_planet_position = planet_position_in_chart(planet, rasi_chart)
+      sub_planet_position = planet_position_in_chart(sub_planet, rasi_chart)
       sub_planet_points = astavarga_table[planet][sub_planet]
       for position in sub_planet_points:
         target_position = (int(sub_planet_position) + int(position) - 1) % 12
