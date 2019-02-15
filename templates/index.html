@@ -71,8 +71,8 @@
     function getKeyByValue(object, value) {
       return Object.keys(object).find(key => object[key] === value);
     }
-     function display_chart() {
-        var table = document.getElementById('rasichart')
+     function display_chart(chart_id, chart_title, chart_json, container, chart_text = null) {
+        var table = document.getElementById(chart_id)
         if(table) {
           table.parentNode.removeChild(table);
         }
@@ -80,7 +80,7 @@
         var tr = table.insertRow(-1);                   
         table.setAttribute("border", "1");
         //table.setAttribute("padding", "60");
-        table.setAttribute("id", "rasichart");
+        table.setAttribute("id", chart_id);
 
         // ADD JSON DATA TO THE TABLE AS ROWS.
         for (var i = 0; i < 4; i++) {
@@ -92,11 +92,12 @@
                 if(j == 1 && i == 1)
                 {
                 var tabCell = tr.insertCell(-1);
-                tabCell.setAttribute("colspan", "2")
-                tabCell.setAttribute("rowspan", "2")
+                tabCell.setAttribute("colspan", "2");
+                tabCell.setAttribute("class", "black_box");
+                tabCell.setAttribute("rowspan", "2");
                 tabCell.setAttribute("id", i + "_"+ j)
                 //tabCell.setAttribute("style", "text-align:center;")
-                tabCell.innerHTML = "Rasi"
+                tabCell.innerHTML = chart_title
                 }
                 else if( (i==1 && j==2) || (i==2 && j==1) || (i==2 && j==2))
                 {
@@ -107,11 +108,19 @@
                    var tabCell = tr.insertCell(-1);
                    var id = i + "_"+ j
                    tabCell.setAttribute("id", id)
-                   tabCell.innerHTML = rasi[getKeyByValue(house_map, id)].planets.join("\r\n");;
+                   if (typeof chart_text === 'undefined' || chart_text === null )
+                   {
+                   tabCell.innerHTML = chart_json[getKeyByValue(house_map, id)].planets.join("\r\n");
+                    }
+                    else
+                    {
+                      console.log(chart_json[getKeyByValue(house_map, id)]);
+                    tabCell.innerHTML = chart_json[getKeyByValue(house_map, id)][`${chart_text}`];
+                   }
                 }
             }
         }
-$("#mainchart").append(table);
+$(`#${container}`).append(table);
 }
 
 function update_chart(option) {
@@ -127,7 +136,7 @@ function update_chart(option) {
     }
     // asign to selected rasi
     rasi[position].planets.push(planet_name);
-    display_chart();
+    display_chart('rasichart', 'Rasi', rasi, 'mainchart');
 
 }
 function display_option() {
@@ -156,14 +165,13 @@ function display_option() {
 
 
 $( document ).ready(function() {
-    display_chart();
+    display_chart('rasichart', 'Rasi', rasi, 'mainchart');
     display_option();
     $('#generate_astavarga').click(function() {
       // Validate
       var validate = true;
       for( var i = 0; i < planets.length; i++){
         var opt = document.getElementById(planets[i]);
-        console.log(opt.options[opt.selectedIndex].value)
         if (opt.options[opt.selectedIndex].value == "0")
         {
           validate = false
@@ -172,17 +180,24 @@ $( document ).ready(function() {
           break;
         }
       }
-      $.ajax({
-        type: "GET",
-        url: "generate_astavarga",
-        data: { rasi: JSON.stringify(rasi) },
-        async: false,
-        success: function(result) {
-         
-        },
-        error: function(err) {
-        }
-      });
+      if (validate)
+      {
+        $("#message").text('');
+        $.ajax({
+          type: "GET",
+          url: "generate_astavarga",
+          data: { rasi: JSON.stringify(rasi) },
+          async: false,
+          success: function(result) {
+            astavarga_charts = JSON.parse(result);
+            for (planet in astavarga_charts) {
+              display_chart(`astavarga_${planet}`, planet, astavarga_charts[planet], 'astavarga_charts', 'astavarga_point');
+            }
+          },
+          error: function(err) {
+          }
+        });
+      }
     });
 });
 </script>
@@ -192,7 +207,7 @@ $( document ).ready(function() {
 {% block content %}
 <div style="text-align:center;">
     <div style="width: 50%; float:left;">
-    <p id="positions" class="grid"></p>
+    <p id="positions"></p>
     </div>
     <div style="width: 50%; float:right;">
     <p id="mainchart"></p>
@@ -200,8 +215,9 @@ $( document ).ready(function() {
 </div>
 <input type='button' id="generate_astavarga" value='Generate Astavarga'>
 <div>
-<p id="message">Message</p>
+<p id="message"></p>
 </div>
-<div id="astavarga_charts"></div>
+<div id="astavarga_charts">
+</div>
 
 {% endblock %}
