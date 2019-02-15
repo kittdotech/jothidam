@@ -1,17 +1,25 @@
-from flask import request, url_for
-from flask_api import FlaskAPI, status, exceptions
-from astavarga.controller import new_chart
+from flask import Flask, request, url_for, render_template
+import json
+from astavarga.controller import generate_astavarga
 
-app = FlaskAPI(__name__)
+app = Flask(__name__)
 
-@app.route("/", methods=['GET', 'POST'])
-def show_empty_chart():
+@app.route("/", methods=['GET'])
+def index():
     """
     Show empty chart.
     """
     if request.method == 'GET':
-      print('---Calling new chart----')  
-      return new_chart()
+      return render_template('index.html')
+
+@app.route("/generate_astavarga", methods=['GET'])
+def calculate_astavarga():
+    """
+    Calculate astavarga
+	"""
+    rasi = json.loads(request.args.get('rasi'))
+    astavarga_charts = generate_astavarga(rasi)
+    return json.dumps(astavarga_charts)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
