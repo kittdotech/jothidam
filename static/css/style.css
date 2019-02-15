@@ -1,9 +1,15 @@
 table{
     border-spacing: 0px;
-    background-color: lightGrey;
+    table-layout: fixed;
 }
 
-td{
-    border: 10px solid black;
+td {
+    border: 1px solid black;
     text-align: center;
+    padding: 60px;
+    overflow: hidden;
+}
+
+#astavarga_charts td {
+  padding: 10px;
 }
